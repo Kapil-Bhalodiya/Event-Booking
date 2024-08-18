@@ -22,6 +22,7 @@ module.exports = {
             })
     },
     login: async ({emailId, password}) => {
+        console.log("called..!", emailId, password);
         const user = await User.findOne({emailId: emailId});
         if(!user){
             throw new Error("Invalid User");

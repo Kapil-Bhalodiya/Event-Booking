@@ -1,16 +1,32 @@
 import './App.css';
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import Login from './pages/login';
 import React from 'react';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import Home from './pages/home/Home';
+import Login from './pages/auth/Login';
+import Register from './pages/auth/Register';
+import Events from './pages/event/Event';
+import Navigation from './component/Navigation';
+import { UserProvider, useUser } from './context/AuthContext';
+import Bookings from './pages/booking/Booking';
 
 function App() {
+  console.log("Log : ", useUser());
   return (
     <div className="App">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" Component={Login} />
-        </Routes>
-      </BrowserRouter>
+      <UserProvider>
+        <BrowserRouter>
+          <React.Fragment>
+            <Navigation />
+            <Routes>
+              <Route path="/" Component={Home} />
+              <Route path="/login" Component={Login} />
+              <Route path="/register" Component={Register} />
+              <Route path="/event" Component={Events} />
+              <Route path="/booking" Component={Bookings} />
+            </Routes>
+          </React.Fragment>
+        </BrowserRouter>
+      </UserProvider>
     </div>
   );
 }

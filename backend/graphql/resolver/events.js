@@ -13,6 +13,7 @@ module.exports = {
         });
     },
     createEvent: async (eventArg, req) => {
+        console.log("req : ",req);
         if(!req.isAuth) throw new Error('Unauthenticated!');
         try {
             const event = new Event({
@@ -20,19 +21,18 @@ module.exports = {
                 description: eventArg.eventInput.description,
                 price: +eventArg.eventInput.price,
                 date: new Date(eventArg.eventInput.date),
-                creator: req._id
+                creator: req.userId
             })
             const result = await event.save();
             createdEvents = tansformEvent(result);
-            const creator = await User.findById(req._id);
+            const creator = await User.findById(req.userId);
             if (!creator) {
                 throw new Error("User Not Exist")
             }
-            console.log("creator : ",creator);
-            creator.createdEvets.push(event)
+            creator.createdEvents.push(event)
             console.log("creator : ",creator);
             await creator.save();
-            return this.createdEvents;
+            return result;
         }catch (err) {
             console.log(err);
             throw new Error("Unable to add new Event")

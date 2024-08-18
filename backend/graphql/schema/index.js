@@ -32,6 +32,7 @@ module.exports = buildSchema(`
     }
 
     input userInput{
+        username: String!
         emailId: String!,
         password: String!
     }
