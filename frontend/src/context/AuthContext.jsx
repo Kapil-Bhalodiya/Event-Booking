@@ -8,11 +8,12 @@ export const UserProvider = ({ children }) => {
   const login = (userData) => {
     console.log("setData = ",userData);
     setUser(userData);
-    localStorage.setItem('session', userData);
+    localStorage.setItem('session', userData.token);
   };
 
   const logout = () => {
     setUser(null);
+    console.log("User Logout : ",user);
     localStorage.removeItem('session');
   };
 

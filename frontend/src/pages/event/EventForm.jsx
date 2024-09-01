@@ -1,9 +1,8 @@
-// EventForm.jsx
 import React from 'react';
 import { Form } from 'react-bootstrap';
 
 export default function EventForm(props) {
-    const { formData, handleChange, errors } = props;
+    const { formData, handleChange, handleFileChange, errors } = props;
     return (
         <Form>
             <Form.Group className="mb-3" controlId="formEventTitle">
@@ -40,6 +39,17 @@ export default function EventForm(props) {
                     isInvalid={!!errors.date}
                 />
                 <Form.Control.Feedback type="invalid">{errors.date}</Form.Control.Feedback>
+            </Form.Group>
+            <Form.Group controlId="formFile">
+                <Form.Label>Image</Form.Label>
+                <Form.Control
+                    type="file"
+                    name="eventImage"
+                    onChange={handleFileChange}
+                />
+                <Form.Control.Feedback type="invalid">
+                    {errors.eventImage}
+                </Form.Control.Feedback>
             </Form.Group>
             <Form.Group className="mb-3" controlId="formEventDescription">
                 <Form.Label>Description</Form.Label>

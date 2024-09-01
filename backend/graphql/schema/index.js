@@ -1,11 +1,14 @@
 const { buildSchema } = require('graphql');
 
 module.exports = buildSchema(`
+    scalar Upload
+
     type Event{
         _id: ID!
         title: String!,
         description: String!,
         price: Float!,
+        image: String,
         date: String!,
         creator: User!
     }
@@ -41,7 +44,8 @@ module.exports = buildSchema(`
         title: String!,
         description: String!,
         price: Float!,
-        date: String!
+        date: String!,
+        image: String
     }
 
     input bookingInput{
@@ -56,7 +60,7 @@ module.exports = buildSchema(`
     }
 
     type rootMutation{
-        createEvent(eventInput: eventInput): Event
+        createEvent(eventInput: eventInput, eventImage: Upload): Event
         createUser(userInput: userInput): User
         bookingEvent(bookingInput: bookingInput): Booking
         cancelBooking(bookingId: ID): Event

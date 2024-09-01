@@ -4,7 +4,7 @@ import { Row, Col, Button, Container } from 'react-bootstrap';
 import { useNavigate, Link } from 'react-router-dom';
 import { useUser } from '../../context/AuthContext';
 import CustomModal from '../../component/modal/Modal';
-import { BACKEND_URL } from '../../config';
+import { BACKEND_URL,BACKEND_COMMON } from '../../../config';
 import EventForm from './EventForm';
 import BookForm from '../booking/BookForm';
 import SpinnerComponent from '../../component/spinner/spinner';
@@ -22,10 +22,10 @@ export default function Events() {
     const [showModal, setShowModal] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const handleCloseModal = () => setShowModal(false);
+    const [image, setImage] = useState(null);
     const { user, logout } = useUser();
 
     useEffect(() => {
-        console.log("called..");
         fetchEvents();
     }, [])
 
@@ -40,6 +40,7 @@ export default function Events() {
                     price
                     description
                     date
+                    image
                 }
             }`
         }
@@ -92,35 +93,69 @@ export default function Events() {
         })
     }
 
-    const handleSaveChanges = async () => {
-        if (modalType === 'create' && !validateForm()) {
-            setIsLoading(false);
-            return; // Exit if validation fails
-        }
+    const handleFileChange = (e) => {
+        setImage(e.target.files[0]);
+    };
 
-        const requestBody = requestBodyMap[modalType]();
-        console.log("user : ",user);
+    const handleSaveChanges = async (e) => {
+        e.preventDefault();
+        
+        const form = new FormData();
+        form.append('operations', JSON.stringify({
+            query: `
+                mutation($eventImage: Upload, $eventInput: eventInput!) {
+                    createEvent(eventInput: $eventInput, eventImage: $eventImage) {
+                        _id
+                        title
+                        image
+                    }
+                }
+            `,
+            variables: {
+                eventInput: {
+                    title: formData.title,
+                    description: formData.description,
+                    price: parseFloat(formData.price),
+                    date: formData.date
+                }
+            }
+        }));
+        form.append('map', JSON.stringify({
+            '0': ['variables.eventImage']
+        }));
+        
+        if (image) {
+            form.append('0', image);
+        }
+        
         try {
-            const response = await fetch(`${BACKEND_URL}/graphql`, {
+            const response = await fetch(`${BACKEND_URL}`, {
                 method: 'POST',
-                body: JSON.stringify(requestBody),
+                body: form,
                 headers: {
-                    'Content-Type': 'application/json',
                     'Authorization': `${user.token}`
                 }
             });
+    
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+    
             const result = await response.json();
-            console.log(" result : ",result)
-            if (result.errors) throw new Error('Error processing request');
-            handleCloseModal();
-            fetchEvents();
+            if (result.errors) {
+                console.error(result.errors);
+            } else {
+                console.log("Success:", result);
+                fetchEvents();
+                handleCloseModal();
+            }
         } catch (error) {
             console.error('Error saving changes:', error);
-        } finally {
-            setIsLoading(false);
         }
+    };
+    
+    
 
-    }
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({
@@ -146,9 +181,8 @@ export default function Events() {
     };
 
     return (
-        !user ? <h6>Please log in first, <Link to={'/login'}> click Here</Link></h6> : 
+        !localStorage.getItem('session') ? <h6>Please log in first, <Link to={'/login'}> click Here</Link></h6> : 
         <>
-            {console.log("evnts : : ", events)}
             <Container>
                 <CustomModal
                     show={showModal}
@@ -156,7 +190,7 @@ export default function Events() {
                     handleSave={handleSaveChanges}
                     heading={modalType === 'create' ? 'Add Event' : 'Book Event'}
                     saveButtonText={modalType === 'create' ? 'Create Event' : 'Book Event'}>
-                    {modalType === 'create' ? <EventForm formData={formData} handleChange={handleChange} errors={errors} /> :
+                    {modalType === 'create' ? <EventForm formData={formData} handleChange={handleChange} errors={errors} handleFileChange={handleFileChange} /> :
                         <BookForm formdata={formData} />}
                 </CustomModal>
                 <SpinnerComponent isLoading={isLoading} /> 
@@ -165,8 +199,8 @@ export default function Events() {
                         <h2 className="event-heading">Events</h2>
                         <h6 className="event-subheading">Review your events!</h6>
                     </Col>
-                    <Col sm={4}>
-                        <Button variant="info" type="submit" onClick={() => handleShowModal('create')} className="mb-3 login-button">
+                    <Col sm={4} className='mt-3'>
+                        <Button variant='light' sm={2} type="submit" onClick={() => handleShowModal('create')} className="mb-3 login-button bg-white">
                             + Create Event
                         </Button>
                     </Col>
@@ -174,8 +208,8 @@ export default function Events() {
                         {events.length > 0 ? (
                             events.map((event) => (
                                 <Col key={event._id} sm={12} className="mb-3">
-                                    <div className="event-row d-flex align-items-center justify-content-between p-3 border rounded">
-                                        <img className="img" alt='event image' />
+                                    <div className="event-row d-flex align-items-center justify-content-between p-3 border rounded bg-white">
+                                        <img className="img" src={`${BACKEND_COMMON}${event.image}`} alt='event image' height={100} width={100} />
                                         <h5 className="event-title mr-3">{event.title}</h5>
                                         <div className="event-description mr-3">{event.description}</div>
                                         <div className="event-price mr-3">{event.price}</div>

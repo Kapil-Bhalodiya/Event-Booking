@@ -6,11 +6,10 @@ import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import Events from './pages/event/Event';
 import Navigation from './component/Navigation';
-import { UserProvider, useUser } from './context/AuthContext';
+import { UserProvider } from './context/AuthContext';
 import Bookings from './pages/booking/Booking';
 
 function App() {
-  console.log("Log : ", useUser());
   return (
     <div className="App">
       <UserProvider>

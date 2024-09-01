@@ -6,11 +6,15 @@ import { Link } from 'react-router-dom';
 import { useUser } from '../context/AuthContext';
 
 export default function Navigation() {
-    const { user } = useUser();
+    const {logout} = useUser();
+    const handleLogout = () => {
+        logout()
+    };
+
     return (
-        <Navbar collapseOnSelect expand="lg" className="bg-body-tertiary">
+        <Navbar collapseOnSelect expand="lg" className="bg-white mb-2">
             <Container>
-                <Navbar.Brand href="#home">React-Bootstrap</Navbar.Brand>
+                <Navbar.Brand href="#home">EVENTO</Navbar.Brand>
                 <Navbar.Toggle aria-controls="responsive-navbar-nav" />
                 <Navbar.Collapse id="responsive-navbar-nav">
                     <Nav className="me-auto">
@@ -29,8 +33,8 @@ export default function Navigation() {
                         </NavDropdown>
                     </Nav>
                     <Nav>
-                        {user ?
-                            <Nav.Link href="/logout">Logout</Nav.Link>
+                        {localStorage.getItem('session') ?
+                            <Nav.Link onClick={handleLogout}>Logout</Nav.Link>
                             :
                             <>
                                 <Nav.Link href="/login">Login</Nav.Link>

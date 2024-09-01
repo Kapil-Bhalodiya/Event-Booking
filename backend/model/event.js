@@ -18,6 +18,9 @@ const eventSchema = new Schema({
         type: Date,
         require: true
     },
+    image: {
+        type: String
+    },
     creator: {
         type: Schema.Types.ObjectId,
         ref : 'User'

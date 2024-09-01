@@ -1,13 +1,16 @@
 import './Auth.css';
 import React, { useState } from 'react';
 import { Form, Button } from 'react-bootstrap';
-import { BACKEND_URL } from '../../config';
+import { BACKEND_URL } from '../../../config';
 import { Link } from 'react-router-dom';
+import SpinnerComponent from '../../component/spinner/spinner';
+import GoogleAuth from '../../component/GoogleAuth';
 
 export default function Register() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState("");
 
   const validateForm = () => {
@@ -30,22 +33,23 @@ export default function Register() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log("event : ",event.target);
+    setLoading(true);
     const formErrors = validateForm();
     if (Object.keys(formErrors).length > 0) setErrors(formErrors);
     else {
       setErrors({});
-        const response = await fetch(`${BACKEND_URL}`, {
-          method: 'POST',
-          body: JSON.stringify(requestBody),
-          headers: {
-              'Content-Type': 'application/json'
-          }
-        });
-        const result = await response.json();
-        console.log("result",result);
-        if(result.errors) throw new Error('Invalid Credential');
+      const response = await fetch(`${BACKEND_URL}`, {
+        method: 'POST',
+        body: JSON.stringify(requestBody),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      const result = await response.json();
+      console.log("result", result);
+      if (result.errors) throw new Error('Invalid Credential');
     }
+    setLoading(false);
   }
 
   return (
@@ -94,11 +98,15 @@ export default function Register() {
             </Form.Control.Feedback>
           </Form.Group>
           <Button variant="primary" type="submit" className="mb-3 login-button">
-            Create Account
+            <SpinnerComponent isLoading={loading} />
+            <strong>{!loading && 'CREATE ACCOUNT'}</strong>
           </Button>
-          <Button variant="light" type="submit" className="login-button">
-            <Link to={'/'}>Sign In</Link>
-          </Button>
+          <Link to={'/login'} className='text-decoration-none'>
+            <Button variant="light" className="login-button">
+              Sign In
+            </Button>
+          </Link>
+          <GoogleAuth />
         </Form>
       </div>
     </div>

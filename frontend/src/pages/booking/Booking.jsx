@@ -2,16 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { Row, Col, Button, Container } from 'react-bootstrap';
 import { useNavigate, Link } from 'react-router-dom';
 import { useUser } from '../../context/AuthContext';
-import { BACKEND_URL } from '../../config';
+import { BACKEND_URL } from '../../../config';
 import SpinnerComponent from '../../component/spinner/spinner';
 
 export default function Bookings() {
     const [bookings, setBookings] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-    const { user, logout } = useUser();
+    const user = localStorage.getItem('session');
 
     useEffect(() => {
-        console.log("called..");
         fetchBooking();
     }, [])
 
@@ -36,7 +35,7 @@ export default function Bookings() {
             body: JSON.stringify(requestBody),
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': user.token
+                'Authorization': localStorage.getItem('session')
             }
         })
         const result = await response.json();
@@ -46,8 +45,36 @@ export default function Bookings() {
         if (result.errors) throw new Error('Fetching issue while bookings.');
     }
 
+    const handleCancel = async (id) => {
+        console.log("Id : ",id);
+        setIsLoading(true);
+        const requestBody = {
+            query: `
+                mutation {
+                    cancelBooking(bookingId: "${id}"){
+                        _id,
+                        title
+                    }
+                }`
+        }
+        const response = await fetch(`${BACKEND_URL}`, {
+            method: 'POST',
+            body: JSON.stringify(requestBody),
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': localStorage.getItem('session')
+            }
+        })
+        const result = await response.json();
+        setIsLoading(false);
+        console.log("res : ",result)
+        setBookings(result.data.cancelBooking);
+        fetchBooking();
+        if (result.errors) throw new Error('Fetching issue while bookings.');
+    }
+
     return(
-        !user ? <h6>Please log in first, <Link to={'/login'}> click Here</Link></h6> : 
+        !user ? <h6>Please log in first, <Link to={'/login'}>click Here</Link></h6> : 
         <>
             {console.log("bookings : : ", bookings)}
             <Container>
@@ -58,7 +85,7 @@ export default function Bookings() {
                         <h6 className="booking-subheading">Review your bookings!</h6>
                     </Col>
                     <Col sm={4}>
-                        <Button variant="info" type="submit" onClick='' className="mb-3 login-button">
+                        <Button variant="info" type="submit" className="mb-3 login-button">
                             + Create booking
                         </Button>
                     </Col>
@@ -72,7 +99,7 @@ export default function Bookings() {
                                         <div className="booking-description mr-3">{booking.description}</div>
                                         <div className="booking-date">{new Date(booking.createdAt).toLocaleDateString()}</div>
                                         <div className="booking-date">{new Date(booking.updatedAt).toLocaleDateString()}</div>
-                                        <Button variant="secondary" className="booking-detail" onClick=''>Cancle booking</Button>
+                                        <Button variant="secondary" className="booking-detail" onClick={() => handleCancel(booking._id)}>Cancle booking</Button>
                                     </div>
                                 </Col>
                             ))

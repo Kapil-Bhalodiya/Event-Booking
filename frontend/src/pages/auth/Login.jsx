@@ -1,14 +1,17 @@
 import './Auth.css';
 import React, { useState } from 'react';
 import { Form, Button } from 'react-bootstrap';
-import { BACKEND_URL } from '../../config';
+import { BACKEND_URL } from '../../../config';
 import { Link, useNavigate } from 'react-router-dom';
 import { useUser } from '../../context/AuthContext';
+import SpinnerComponent from '../../component/spinner/spinner';
+import GoogleAuth from '../../component/GoogleAuth';
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState("");
+  const [loading, setLoading] = useState(false);
   const { login } = useUser();
   const naviagte = useNavigate();
 
@@ -32,24 +35,26 @@ export default function Login() {
   }
 
   const handleSubmit = async (event) => {
+    setLoading(true);
     event.preventDefault();
     const formErrors = validateForm();
     if (Object.keys(formErrors).length > 0) setErrors(formErrors);
     else {
       setErrors({});
-        const response = await fetch(`${BACKEND_URL}`, {
-          method: 'POST',
-          body: JSON.stringify(requestBody),
-          headers: {
-              'Content-Type': 'application/json'
-          }
-        });
-        const result = await response.json();
-        console.log("result : ",result);
-        if(result.errors) throw new Error('Invalid Credential');
-        login(result.data.login);
-        naviagte('/');
-      }
+      const response = await fetch(`${BACKEND_URL}`, {
+        method: 'POST',
+        body: JSON.stringify(requestBody),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      const result = await response.json();
+      console.log("result : ", result);
+      if (result.errors) throw new Error('Invalid Credential');
+      login(result.data.login);
+      naviagte('/');
+    }
+    setLoading(false);
   }
 
   return (
@@ -85,11 +90,15 @@ export default function Login() {
             </Form.Control.Feedback>
           </Form.Group>
           <Button variant="primary" type="submit" className="mb-3 login-button">
-            Login
+            <SpinnerComponent isLoading={loading} />
+            <strong>{!loading && 'LOG IN'}</strong>
           </Button>
-          <Button  variant="light" type="submit" className="login-button">
-            <Link to={'/register'}>Create an Accout</Link>
-          </Button>
+          <Link to={'/register'} className='text-decoration-none'>
+            <Button variant="light" className="login-button">
+              Create an Accout
+            </Button>
+          </Link>
+          <GoogleAuth />
         </Form>
       </div>
     </div>
